@@ -13,8 +13,8 @@
             background-color: #0f172a;
             font-family: 'Noto Sans JP', sans-serif;
             color: #f8fafc;
-            overflow: hidden;
-            height: 100vh;
+            min-height: 100vh;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
@@ -96,12 +96,12 @@
     <!-- Header -->
     <header class="text-center mb-6">
         <h1 class="orbitron text-2xl font-bold tracking-widest text-blue-400">DX SURVIVAL QUEST</h1>
-        <p class="text-xs text-slate-500 mt-1 uppercase tracking-tighter">Event Terminal v4.1 | Optimized UI</p>
+        <p class="text-xs text-slate-500 mt-1 uppercase tracking-tighter">Event Terminal v4.2 | Optimized UI</p>
     </header>
 
     <!-- Card Area -->
     <div class="flex-grow flex items-center justify-center card-perspective relative">
-        <div id="cardContainer" class="w-full max-w-sm h-[480px] card-inner">
+        <div id="cardContainer" class="w-full max-w-sm h-[420px] md:h-[520px] card-inner">
             
             <!-- Front (Waiting State) -->
             <div class="card-front">
@@ -118,10 +118,14 @@
                     <i class="fas fa-circle-notch fa-spin"></i>
                 </div>
                 <h3 id="eventTitle" class="text-xl font-bold mb-3">LOADING...</h3>
-                <div class="flex-grow flex items-center">
-                    <p id="eventDesc" class="text-slate-300 text-sm leading-relaxed">
+                <div class="flex-grow flex flex-col justify-center">
+                    <p id="eventDesc" class="text-slate-300 text-sm leading-relaxed mb-4">
                         データを解析中です...
                     </p>
+                    <div id="eventConditionBox" class="hidden bg-slate-800/50 p-3 rounded-lg border border-slate-600">
+                        <p class="text-xs text-slate-400 orbitron mb-1">MISSION</p>
+                        <p id="eventCondition" class="text-sm font-bold text-white leading-tight"></p>
+                    </div>
                 </div>
                 <div id="eventImpact" class="orbitron text-3xl font-bold mt-4">
                     ---
@@ -138,16 +142,16 @@
                 <i class="fas fa-random mr-2"></i>DRAW NEXT EVENT
             </button>
 
-            <!-- HP Control Panel -->
+            <!-- Asset Control Panel -->
             <div class="bg-slate-800/80 rounded-xl p-4 border border-blue-500/30 backdrop-blur-sm">
                 <div class="flex justify-between items-end mb-2">
-                    <span class="text-blue-400 font-bold orbitron text-sm">HP STATUS</span>
-                    <span id="hpText" class="text-white font-bold orbitron text-xl">100 / 100</span>
+                    <span class="text-blue-400 font-bold orbitron text-sm">資産 STATUS</span>
+                    <span id="hpText" class="text-white font-bold orbitron text-xl">100 / 1000</span>
                 </div>
                 
-                <!-- HP Bar -->
+                <!-- Asset Bar -->
                 <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden mb-4 border border-slate-700">
-                     <div id="hpBar" class="h-full bg-green-500 transition-all duration-300 shadow-[0_0_10px_rgba(34,197,94,0.6)]" style="width: 100%"></div>
+                     <div id="hpBar" class="h-full bg-green-500 transition-all duration-300 shadow-[0_0_10px_rgba(34,197,94,0.6)]" style="width: 10%"></div>
                 </div>
 
                 <!-- Manual Controls -->
@@ -167,54 +171,54 @@
     <script>
         const cards = [
             // --- システム・基盤系 ---
-            { title: "レガシーの反乱", desc: "20年前の基幹システムがダウン！復旧とデータ整合性の確認に多額のコストがかかった。", impact: "HP -25", type: "negative", icon: "fa-solid fa-fire-extinguisher" },
-            { title: "クラウド移行成功", desc: "インフラをAWSへ全面移行。運用コストが下がり、新機能のリリース速度が倍増した。", impact: "HP +20", type: "positive", icon: "fa-solid fa-cloud-arrow-up" },
-            { title: "API連携の不具合", desc: "外部サービスとの連携バグにより、決済システムが3時間停止。顧客への補填が発生。", impact: "HP -15", type: "negative", icon: "fa-solid fa-plug-circle-xmark" },
-            { title: "ゼロトラスト導入", desc: "強固な認証基盤を構築。テレワーク環境での安全性が飛躍的に向上した。", impact: "HP +15", type: "positive", icon: "fa-solid fa-user-shield" },
-            { title: "サーバー保守費高騰", desc: "古いハードウェアの部品が枯渇。調達に通常の3倍の費用を要した。", impact: "HP -10", type: "negative", icon: "fa-solid fa-microchip" },
-            { title: "開発の内製化成功", desc: "主要システムの開発を内製に切り替え。ベンダー依存を脱却し、意思決定が加速した。", impact: "HP +30", type: "positive", icon: "fa-solid fa-code" },
+            { title: "レガシーの反乱", desc: "20年前の基幹システムがダウン！復旧とデータ整合性の確認に多額のコストがかかった。", impact: "資産 -25", type: "negative", icon: "fa-solid fa-fire-extinguisher", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "クラウド移行成功", desc: "インフラをAWSへ全面移行。運用コストが下がり、新機能のリリース速度が倍増した。", impact: "資産 +20", type: "positive", icon: "fa-solid fa-cloud-arrow-up", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "API連携の不具合", desc: "外部サービスとの連携バグにより、決済システムが3時間停止。顧客への補填が発生。", impact: "資産 -15", type: "negative", icon: "fa-solid fa-plug-circle-xmark", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "ゼロトラスト導入", desc: "強固な認証基盤を構築。テレワーク環境での安全性が飛躍的に向上した。", impact: "資産 +15", type: "positive", icon: "fa-solid fa-user-shield", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "サーバー保守費高騰", desc: "古いハードウェアの部品が枯渇。調達に通常の3倍の費用を要した。", impact: "資産 -10", type: "negative", icon: "fa-solid fa-microchip", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "開発の内製化成功", desc: "主要システムの開発を内製に切り替え。ベンダー依存を脱却し、意思決定が加速した。", impact: "資産 +30", type: "positive", icon: "fa-solid fa-code", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
 
             // --- データ・AI活用系 ---
-            { title: "AI需要予測的中", desc: "AIが予測した通りの需要が発生。在庫を余らせることなく完売し、利益が拡大した。", impact: "HP +35", type: "positive", icon: "fa-solid fa-wand-magic-sparkles" },
-            { title: "データサイロ問題", desc: "部門間でデータの形式がバラバラなことが判明。統合プロジェクトが立ち上がり、予算を消費。", impact: "HP -20", type: "negative", icon: "fa-solid fa-database" },
-            { title: "分析基盤の構築", desc: "全社共通のデータダッシュボードが完成。全社員がデータに基づく議論を開始した。", impact: "HP +20", type: "positive", icon: "fa-solid fa-chart-pie" },
-            { title: "AIの偏見（バイアス）", desc: "採用AIに不適切なバイアスが発見された。再調整と謝罪対応に追われる事態に。", impact: "HP -15", type: "negative", icon: "fa-solid fa-robot" },
-            { title: "個人情報漏洩未遂", desc: "不正アクセスの兆候。大事には至らなかったが、緊急のセキュリティ診断を実施した。", impact: "HP -10", type: "negative", icon: "fa-solid fa-user-lock" },
-            { title: "予測アルゴリズム進化", desc: "最新の深層学習モデルを採用。マーケティング効率が劇的に改善した。", impact: "HP +25", type: "positive", icon: "fa-solid fa-brain" },
+            { title: "AI需要予測的中", desc: "AIが予測した通りの需要が発生。在庫を余らせることなく完売し、利益が拡大した。", impact: "資産 +35", type: "positive", icon: "fa-solid fa-wand-magic-sparkles", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "データサイロ問題", desc: "部門間でデータの形式がバラバラなことが判明。統合プロジェクトが立ち上がり、予算を消費。", impact: "資産 -20", type: "negative", icon: "fa-solid fa-database", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "分析基盤の構築", desc: "全社共通のデータダッシュボードが完成。全社員がデータに基づく議論を開始した。", impact: "資産 +20", type: "positive", icon: "fa-solid fa-chart-pie", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "AIの偏見（バイアス）", desc: "採用AIに不適切なバイアスが発見された。再調整と謝罪対応に追われる事態に。", impact: "資産 -15", type: "negative", icon: "fa-solid fa-robot", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "個人情報漏洩未遂", desc: "不正アクセスの兆候。大事には至らなかったが、緊急のセキュリティ診断を実施した。", impact: "資産 -10", type: "negative", icon: "fa-solid fa-user-lock", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "予測アルゴリズム進化", desc: "最新の深層学習モデルを採用。マーケティング効率が劇的に改善した。", impact: "資産 +25", type: "positive", icon: "fa-solid fa-brain", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
 
             // --- 組織・文化・人材系 ---
-            { title: "リスキリングの結実", desc: "社員が自発的にPythonを習得。現場の定型業務が100個自動化された！", impact: "HP +30", type: "positive", icon: "fa-solid fa-graduation-cap" },
-            { title: "役員の理解不足", desc: "「ITはコスト」と信じる役員から予算を削減された。DX推進スピードが大幅に低下。", impact: "HP -20", type: "negative", icon: "fa-solid fa-hand-holding-dollar" },
-            { title: "外部CDO着任", desc: "経験豊富な最高デジタル責任者が着任。曖昧だった戦略が明確になり、活気が戻った。", impact: "HP +15", type: "positive", icon: "fa-solid fa-user-tie" },
-            { title: "アジャイル文化定着", desc: "失敗を許容する文化が浸透。小さな改善を繰り返すことで、サービスの質が向上。", impact: "HP +20", type: "positive", icon: "fa-solid fa-rotate" },
-            { title: "キーマンの離職", desc: "DXを牽引していたエース社員が転職。プロジェクトが半年間ストップした。", impact: "HP -30", type: "negative", icon: "fa-solid fa-door-open" },
-            { title: "社内ハッカソン開催", desc: "週末のハッカソンから画期的な新規事業案が誕生。市場での期待が高まった。", impact: "HP +15", type: "positive", icon: "fa-solid fa-lightbulb" },
+            { title: "リスキリングの結実", desc: "社員が自発的にPythonを習得。現場の定型業務が100個自動化された！", impact: "資産 +30", type: "positive", icon: "fa-solid fa-graduation-cap", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "役員の理解不足", desc: "「ITはコスト」と信じる役員から予算を削減された。DX推進スピードが大幅に低下。", impact: "資産 -20", type: "negative", icon: "fa-solid fa-hand-holding-dollar", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "外部CDO着任", desc: "経験豊富な最高デジタル責任者が着任。曖昧だった戦略が明確になり、活気が戻った。", impact: "資産 +15", type: "positive", icon: "fa-solid fa-user-tie", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "アジャイル文化定着", desc: "失敗を許容する文化が浸透。小さな改善を繰り返すことで、サービスの質が向上。", impact: "資産 +20", type: "positive", icon: "fa-solid fa-rotate", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "キーマンの離職", desc: "DXを牽引していたエース社員が転職。プロジェクトが半年間ストップした。", impact: "資産 -30", type: "negative", icon: "fa-solid fa-door-open", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "社内ハッカソン開催", desc: "週末のハッカソンから画期的な新規事業案が誕生。市場での期待が高まった。", impact: "資産 +15", type: "positive", icon: "fa-solid fa-lightbulb", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
 
             // --- 顧客体験・マーケティング系 ---
-            { title: "アプリUX刷新", desc: "顧客向けアプリの使い勝手を改善。継続利用率が過去最高を記録した。", impact: "HP +25", type: "positive", icon: "fa-solid fa-mobile-screen-button" },
-            { title: "SNSマーケ大成功", desc: "データを活用したターゲティング広告がバズり、新規顧客が数万人増加した。", impact: "HP +30", type: "positive", icon: "fa-solid fa-share-nodes" },
-            { title: "不適切な自動返信", desc: "顧客対応ボットが失礼な回答を連発。SNSで炎上し、ブランドイメージが低下。", impact: "HP -20", type: "negative", icon: "fa-solid fa-comment-slash" },
-            { title: "オムニチャネル実現", desc: "店舗とECの在庫情報をリアルタイム統合。機会損失がゼロになった。", impact: "HP +20", type: "positive", icon: "fa-solid fa-shop" },
-            { title: "カスタマー成功体験", desc: "デジタルを活用した顧客サポート体制を構築。解約率が半分に低下した。", impact: "HP +15", type: "positive", icon: "fa-solid fa-face-smile" },
-            { title: "フェイクニュース被害", desc: "自社サービスに関するデマが拡散。否定と信頼回復のためにコストを投入。", impact: "HP -10", type: "negative", icon: "fa-solid fa-newspaper" },
+            { title: "アプリUX刷新", desc: "顧客向けアプリの使い勝手を改善。継続利用率が過去最高を記録した。", impact: "資産 +25", type: "positive", icon: "fa-solid fa-mobile-screen-button", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "SNSマーケ大成功", desc: "データを活用したターゲティング広告がバズり、新規顧客が数万人増加した。", impact: "資産 +30", type: "positive", icon: "fa-solid fa-share-nodes", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "不適切な自動返信", desc: "顧客対応ボットが失礼な回答を連発。SNSで炎上し、ブランドイメージが低下。", impact: "資産 -20", type: "negative", icon: "fa-solid fa-comment-slash", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "オムニチャネル実現", desc: "店舗とECの在庫情報をリアルタイム統合。機会損失がゼロになった。", impact: "資産 +20", type: "positive", icon: "fa-solid fa-shop", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "カスタマー成功体験", desc: "デジタルを活用した顧客サポート体制を構築。解約率が半分に低下した。", impact: "資産 +15", type: "positive", icon: "fa-solid fa-face-smile", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "フェイクニュース被害", desc: "自社サービスに関するデマが拡散。否定と信頼回復のためにコストを投入。", impact: "資産 -10", type: "negative", icon: "fa-solid fa-newspaper", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
 
             // --- 外部環境・運・その他 ---
-            { title: "国からのDX補助金", desc: "先進的な取り組みが認められ、高額な補助金がキャッシュバックされた。", impact: "HP +25", type: "positive", icon: "fa-solid fa-sack-dollar" },
-            { title: "法規制の変更", desc: "新しいデータ保護法への対応が必要になった。法務・技術コストが発生。", impact: "HP -15", type: "negative", icon: "fa-solid fa-gavel" },
-            { title: "大手との提携", desc: "GAFAの一角とパートナーシップを締結。世界規模のプラットフォームへ進出。", impact: "HP +40", type: "positive", icon: "fa-solid fa-handshake" },
-            { title: "競合がデジタル投資", desc: "ライバル社が革新的なDXサービスをリリース。顧客の一部を奪われた。", impact: "HP -20", type: "negative", icon: "fa-solid fa-person-running" },
-            { title: "特許の取得成功", desc: "独自のデータ解析手法で特許を取得。ライセンス収入が確定した。", impact: "HP +40", type: "positive", icon: "fa-solid fa-certificate" },
-            { title: "サプライチェーン断絶", desc: "海外のデータセンターが自然災害で被災。サービスが一部制限された。", impact: "HP -25", type: "negative", icon: "fa-solid fa-link-slash" },
-            { title: "デジタルツイン成功", desc: "工場の稼働を仮想空間でシミュレート。効率が20%改善し、コストを削減。", impact: "HP +30", type: "positive", icon: "fa-solid fa-cubes" },
-            { title: "グリーンDX賞", desc: "IT活用による脱炭素化が評価され、環境賞を受賞。投資家からの資金流入。", impact: "HP +10", type: "positive", icon: "fa-solid fa-leaf" },
-            { title: "ランサムウェア攻撃", desc: "身代金要求ウイルスに感染。バックアップからの復旧に多大な時間と費用を投じた。", impact: "HP -30", type: "negative", icon: "fa-solid fa-biohazard" },
-            { title: "予測不能なバグ", desc: "閏年やタイムゾーンに関連した特殊なバグが発生。休日返上で対応した。", impact: "HP -10", type: "negative", icon: "fa-solid fa-bug" },
-            { title: "戦略的ピボット", desc: "不調な事業をデジタル技術で再生。新規顧客層の開拓に成功した。", impact: "HP +25", type: "positive", icon: "fa-solid fa-arrows-spin" },
-            { title: "グローバル進出成功", desc: "デジタルプラットフォームを活用し、低コストで海外市場への展開を果たした。", impact: "HP +35", type: "positive", icon: "fa-solid fa-earth-americas" }
+            { title: "国からのDX補助金", desc: "先進的な取り組みが認められ、高額な補助金がキャッシュバックされた。", impact: "資産 +25", type: "positive", icon: "fa-solid fa-sack-dollar", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "法規制の変更", desc: "新しいデータ保護法への対応が必要になった。法務・技術コストが発生。", impact: "資産 -15", type: "negative", icon: "fa-solid fa-gavel", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "大手との提携", desc: "GAFAの一角とパートナーシップを締結。世界規模のプラットフォームへ進出。", impact: "資産 +40", type: "positive", icon: "fa-solid fa-handshake", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "競合がデジタル投資", desc: "ライバル社が革新的なDXサービスをリリース。顧客の一部を奪われた。", impact: "資産 -20", type: "negative", icon: "fa-solid fa-person-running", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "特許の取得成功", desc: "独自のデータ解析手法で特許を取得。ライセンス収入が確定した。", impact: "資産 +40", type: "positive", icon: "fa-solid fa-certificate", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "サプライチェーン断絶", desc: "海外のデータセンターが自然災害で被災。サービスが一部制限された。", impact: "資産 -25", type: "negative", icon: "fa-solid fa-link-slash", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "デジタルツイン成功", desc: "工場の稼働を仮想空間でシミュレート。効率が20%改善し、コストを削減。", impact: "資産 +30", type: "positive", icon: "fa-solid fa-cubes", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "グリーンDX賞", desc: "IT活用による脱炭素化が評価され、環境賞を受賞。投資家からの資金流入。", impact: "資産 +10", type: "positive", icon: "fa-solid fa-leaf", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "ランサムウェア攻撃", desc: "身代金要求ウイルスに感染。バックアップからの復旧に多大な時間と費用を投じた。", impact: "資産 -30", type: "negative", icon: "fa-solid fa-biohazard", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "予測不能なバグ", desc: "閏年やタイムゾーンに関連した特殊なバグが発生。休日返上で対応した。", impact: "資産 -10", type: "negative", icon: "fa-solid fa-bug", condition: "ミッション：このトラブルへの対策内容を言えたらセーフ（資産減少なし）" },
+            { title: "戦略的ピボット", desc: "不調な事業をデジタル技術で再生。新規顧客層の開拓に成功した。", impact: "資産 +25", type: "positive", icon: "fa-solid fa-arrows-spin", condition: "ミッション：この成功の要因を説明できたら資産獲得" },
+            { title: "グローバル進出成功", desc: "デジタルプラットフォームを活用し、低コストで海外市場への展開を果たした。", impact: "資産 +35", type: "positive", icon: "fa-solid fa-earth-americas", condition: "ミッション：この成功の要因を説明できたら資産獲得" }
         ];
 
         const cardContainer = document.getElementById('cardContainer');
-    const cardContent = document.getElementById('cardContent');
+        const cardContent = document.getElementById('cardContent');
         const drawBtn = document.getElementById('drawBtn');
         const cardCounter = document.getElementById('cardCounter');
         const scanningText = document.getElementById('scanningText');
@@ -223,13 +227,15 @@
         const eventDesc = document.getElementById('eventDesc');
         const eventIcon = document.getElementById('eventIcon');
         const eventImpact = document.getElementById('eventImpact');
+        const eventCondition = document.getElementById('eventCondition');
+        const eventConditionBox = document.getElementById('eventConditionBox');
 
         // Sound Effect
         const drawSound = new Audio('card-flip.mp3');
 
-        // HP System
+        // Asset System (Internally using 'hp' variables for minimal refactor)
         let currentHp = 100;
-        const maxHp = 100;
+        const maxHp = 1000;
         const hpText = document.getElementById('hpText');
         const hpBar = document.getElementById('hpBar');
         const hpMinusBtn = document.getElementById('hpMinusBtn');
@@ -247,7 +253,7 @@
             const percentage = (currentHp / maxHp) * 100;
             hpBar.style.width = `${percentage}%`;
 
-            // Update Bar Color based on HP status
+            // Update Bar Color based on Asset status
             hpBar.className = "h-full transition-all duration-300 shadow-[0_0_10px_rgba(0,0,0,0.3)]"; // Reset base classes
             if (currentHp > 50) {
                 hpBar.classList.add('bg-green-500', 'shadow-[0_0_10px_rgba(34,197,94,0.6)]');
@@ -258,7 +264,7 @@
             }
         }
 
-        // Event Listeners for HP Manual Control
+        // Event Listeners for Manual Control
         hpMinusBtn.addEventListener('click', () => updateHp(-5)); // Decrease by 5
         hpPlusBtn.addEventListener('click', () => updateHp(5));  // Increase by 5
 
@@ -269,6 +275,8 @@
             eventTitle.innerText = "LOADING...";
             eventDesc.innerText = "データを解析中です...";
             eventImpact.innerText = "---";
+            eventConditionBox.classList.add('hidden');
+            eventCondition.innerText = "";
             eventIcon.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
             eventIcon.className = "text-5xl mb-4 text-blue-400";
             cardContent.className = 'card-back type-neutral';
@@ -306,6 +314,11 @@
             eventImpact.innerText = randomCard.impact;
             eventIcon.innerHTML = `<i class="${randomCard.icon}"></i>`;
 
+            if (randomCard.condition) {
+                eventCondition.innerText = randomCard.condition;
+                eventConditionBox.classList.remove('hidden');
+            }
+
             cardContent.className = 'card-back';
             if (randomCard.type === 'positive') {
                 cardContent.classList.add('type-positive');
@@ -322,7 +335,7 @@
             }
 
             // Automatic HP Update Removed (User Request)
-            // const match = randomCard.impact.match(/HP\s*([+-]?\d+)/);
+            // const match = randomCard.impact.match(/資産\s*([+-]?\d+)/);
             // if (match) {
             //     const hpChange = parseInt(match[1], 10);
             //     updateHp(hpChange);
