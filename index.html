@@ -191,7 +191,7 @@
         ];
 
         const cardContainer = document.getElementById('cardContainer');
-        const cardContent = document.getElementById('cardContent');
+    const cardContent = document.getElementById('cardContent');
         const drawBtn = document.getElementById('drawBtn');
         const cardCounter = document.getElementById('cardCounter');
         const scanningText = document.getElementById('scanningText');
@@ -200,6 +200,9 @@
         const eventDesc = document.getElementById('eventDesc');
         const eventIcon = document.getElementById('eventIcon');
         const eventImpact = document.getElementById('eventImpact');
+
+        // Sound Effect
+        const drawSound = new Audio('card-flip.mp3');
 
         let isDrawing = false;
         let drawnCount = 0;
@@ -259,6 +262,10 @@
                 eventImpact.className = 'orbitron text-3xl font-bold text-blue-400';
                 eventIcon.className = 'text-5xl mb-4 text-blue-500';
             }
+
+            // Play sound
+            drawSound.currentTime = 0;
+            drawSound.play().catch(e => console.log("Audio play failed:", e));
 
             setTimeout(() => {
                 cardContainer.classList.add('is-flipped');
