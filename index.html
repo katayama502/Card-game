@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DX Survival Quest - Event Cards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+
+        body {
+            background-color: #0f172a;
+            font-family: 'Noto Sans JP', sans-serif;
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+
+        .card-perspective {
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 2;
+        }
+
+        .card-back {
+            background: #1e293b;
+            transform: rotateY(180deg);
+        }
+
+        /* Status Colors */
+        .type-positive { border-color: #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); }
+        .type-negative { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+        .type-neutral { border-color: #3b82f6; box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); }
+
+        .btn-glow:active {
+            transform: scale(0.95);
+        }
+
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(59, 130, 246, 0.1);
+            position: absolute;
+            top: 0;
+            z-index: 10;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="scanline"></div>
+
+    <!-- Header -->
+    <header class="text-center mb-6">
+        <h1 class="orbitron text-2xl font-bold tracking-widest text-blue-400">DX SURVIVAL QUEST</h1>
+        <p class="text-xs text-slate-500 mt-1 uppercase tracking-tighter">Event Terminal v4.1 | Optimized UI</p>
+    </header>
+
+    <!-- Card Area -->
+    <div class="flex-grow flex items-center justify-center card-perspective relative">
+        <div id="cardContainer" class="w-full max-w-sm h-[480px] card-inner">
+            
+            <!-- Front (Waiting State) -->
+            <div class="card-front">
+                <div class="w-24 h-24 mb-6 rounded-full border-2 border-blue-500 flex items-center justify-center animate-pulse">
+                    <i class="fas fa-microchip text-4xl text-blue-400"></i>
+                </div>
+                <h2 id="scanningText" class="orbitron text-xl font-bold mb-2">READY TO SCAN</h2>
+                <p class="text-slate-400 text-sm">DRAWボタンでデータ取得</p>
+            </div>
+
+            <!-- Back (Event Display) -->
+            <div id="cardContent" class="card-back type-neutral">
+                <div id="eventIcon" class="text-5xl mb-4 text-blue-400">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                </div>
+                <h3 id="eventTitle" class="text-xl font-bold mb-3">LOADING...</h3>
+                <div class="flex-grow flex items-center">
+                    <p id="eventDesc" class="text-slate-300 text-sm leading-relaxed">
+                        データを解析中です...
+                    </p>
+                </div>
+                <div id="eventImpact" class="orbitron text-3xl font-bold mt-4">
+                    ---
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <footer class="mt-6 flex flex-col items-center gap-4">
+        <div class="w-full max-w-sm">
+            <!-- DRAW Button (Full Width) -->
+            <button id="drawBtn" class="btn-glow w-full bg-blue-600 hover:bg-blue-500 text-white orbitron py-4 px-6 rounded-xl font-bold text-lg transition-all shadow-lg shadow-blue-900/40">
+                <i class="fas fa-random mr-2"></i>DRAW NEXT EVENT
+            </button>
+        </div>
+        <p id="cardCounter" class="text-[10px] text-slate-600 orbitron tracking-widest uppercase">Logged: 0 Events</p>
+    </footer>
+
+    <script>
+        const cards = [
+            // --- システム・基盤系 ---
+            { title: "レガシーの反乱", desc: "20年前の基幹システムがダウン！復旧とデータ整合性の確認に多額のコストがかかった。", impact: "HP -25", type: "negative", icon: "fa-solid fa-fire-extinguisher" },
+            { title: "クラウド移行成功", desc: "インフラをAWSへ全面移行。運用コストが下がり、新機能のリリース速度が倍増した。", impact: "HP +20", type: "positive", icon: "fa-solid fa-cloud-arrow-up" },
+            { title: "API連携の不具合", desc: "外部サービスとの連携バグにより、決済システムが3時間停止。顧客への補填が発生。", impact: "HP -15", type: "negative", icon: "fa-solid fa-plug-circle-xmark" },
+            { title: "ゼロトラスト導入", desc: "強固な認証基盤を構築。テレワーク環境での安全性が飛躍的に向上した。", impact: "HP +15", type: "positive", icon: "fa-solid fa-user-shield" },
+            { title: "サーバー保守費高騰", desc: "古いハードウェアの部品が枯渇。調達に通常の3倍の費用を要した。", impact: "HP -10", type: "negative", icon: "fa-solid fa-microchip" },
+            { title: "開発の内製化成功", desc: "主要システムの開発を内製に切り替え。ベンダー依存を脱却し、意思決定が加速した。", impact: "HP +30", type: "positive", icon: "fa-solid fa-code" },
+
+            // --- データ・AI活用系 ---
+            { title: "AI需要予測的中", desc: "AIが予測した通りの需要が発生。在庫を余らせることなく完売し、利益が拡大した。", impact: "HP +35", type: "positive", icon: "fa-solid fa-wand-magic-sparkles" },
+            { title: "データサイロ問題", desc: "部門間でデータの形式がバラバラなことが判明。統合プロジェクトが立ち上がり、予算を消費。", impact: "HP -20", type: "negative", icon: "fa-solid fa-database" },
+            { title: "分析基盤の構築", desc: "全社共通のデータダッシュボードが完成。全社員がデータに基づく議論を開始した。", impact: "HP +20", type: "positive", icon: "fa-solid fa-chart-pie" },
+            { title: "AIの偏見（バイアス）", desc: "採用AIに不適切なバイアスが発見された。再調整と謝罪対応に追われる事態に。", impact: "HP -15", type: "negative", icon: "fa-solid fa-robot" },
+            { title: "個人情報漏洩未遂", desc: "不正アクセスの兆候。大事には至らなかったが、緊急のセキュリティ診断を実施した。", impact: "HP -10", type: "negative", icon: "fa-solid fa-user-lock" },
+            { title: "予測アルゴリズム進化", desc: "最新の深層学習モデルを採用。マーケティング効率が劇的に改善した。", impact: "HP +25", type: "positive", icon: "fa-solid fa-brain" },
+
+            // --- 組織・文化・人材系 ---
+            { title: "リスキリングの結実", desc: "社員が自発的にPythonを習得。現場の定型業務が100個自動化された！", impact: "HP +30", type: "positive", icon: "fa-solid fa-graduation-cap" },
+            { title: "役員の理解不足", desc: "「ITはコスト」と信じる役員から予算を削減された。DX推進スピードが大幅に低下。", impact: "HP -20", type: "negative", icon: "fa-solid fa-hand-holding-dollar" },
+            { title: "外部CDO着任", desc: "経験豊富な最高デジタル責任者が着任。曖昧だった戦略が明確になり、活気が戻った。", impact: "HP +15", type: "positive", icon: "fa-solid fa-user-tie" },
+            { title: "アジャイル文化定着", desc: "失敗を許容する文化が浸透。小さな改善を繰り返すことで、サービスの質が向上。", impact: "HP +20", type: "positive", icon: "fa-solid fa-rotate" },
+            { title: "キーマンの離職", desc: "DXを牽引していたエース社員が転職。プロジェクトが半年間ストップした。", impact: "HP -30", type: "negative", icon: "fa-solid fa-door-open" },
+            { title: "社内ハッカソン開催", desc: "週末のハッカソンから画期的な新規事業案が誕生。市場での期待が高まった。", impact: "HP +15", type: "positive", icon: "fa-solid fa-lightbulb" },
+
+            // --- 顧客体験・マーケティング系 ---
+            { title: "アプリUX刷新", desc: "顧客向けアプリの使い勝手を改善。継続利用率が過去最高を記録した。", impact: "HP +25", type: "positive", icon: "fa-solid fa-mobile-screen-button" },
+            { title: "SNSマーケ大成功", desc: "データを活用したターゲティング広告がバズり、新規顧客が数万人増加した。", impact: "HP +30", type: "positive", icon: "fa-solid fa-share-nodes" },
+            { title: "不適切な自動返信", desc: "顧客対応ボットが失礼な回答を連発。SNSで炎上し、ブランドイメージが低下。", impact: "HP -20", type: "negative", icon: "fa-solid fa-comment-slash" },
+            { title: "オムニチャネル実現", desc: "店舗とECの在庫情報をリアルタイム統合。機会損失がゼロになった。", impact: "HP +20", type: "positive", icon: "fa-solid fa-shop" },
+            { title: "カスタマー成功体験", desc: "デジタルを活用した顧客サポート体制を構築。解約率が半分に低下した。", impact: "HP +15", type: "positive", icon: "fa-solid fa-face-smile" },
+            { title: "フェイクニュース被害", desc: "自社サービスに関するデマが拡散。否定と信頼回復のためにコストを投入。", impact: "HP -10", type: "negative", icon: "fa-solid fa-newspaper" },
+
+            // --- 外部環境・運・その他 ---
+            { title: "国からのDX補助金", desc: "先進的な取り組みが認められ、高額な補助金がキャッシュバックされた。", impact: "HP +25", type: "positive", icon: "fa-solid fa-sack-dollar" },
+            { title: "法規制の変更", desc: "新しいデータ保護法への対応が必要になった。法務・技術コストが発生。", impact: "HP -15", type: "negative", icon: "fa-solid fa-gavel" },
+            { title: "大手との提携", desc: "GAFAの一角とパートナーシップを締結。世界規模のプラットフォームへ進出。", impact: "HP +40", type: "positive", icon: "fa-solid fa-handshake" },
+            { title: "競合がデジタル投資", desc: "ライバル社が革新的なDXサービスをリリース。顧客の一部を奪われた。", impact: "HP -20", type: "negative", icon: "fa-solid fa-person-running" },
+            { title: "特許の取得成功", desc: "独自のデータ解析手法で特許を取得。ライセンス収入が確定した。", impact: "HP +40", type: "positive", icon: "fa-solid fa-certificate" },
+            { title: "サプライチェーン断絶", desc: "海外のデータセンターが自然災害で被災。サービスが一部制限された。", impact: "HP -25", type: "negative", icon: "fa-solid fa-link-slash" },
+            { title: "デジタルツイン成功", desc: "工場の稼働を仮想空間でシミュレート。効率が20%改善し、コストを削減。", impact: "HP +30", type: "positive", icon: "fa-solid fa-cubes" },
+            { title: "グリーンDX賞", desc: "IT活用による脱炭素化が評価され、環境賞を受賞。投資家からの資金流入。", impact: "HP +10", type: "positive", icon: "fa-solid fa-leaf" },
+            { title: "ランサムウェア攻撃", desc: "身代金要求ウイルスに感染。バックアップからの復旧に多大な時間と費用を投じた。", impact: "HP -30", type: "negative", icon: "fa-solid fa-biohazard" },
+            { title: "予測不能なバグ", desc: "閏年やタイムゾーンに関連した特殊なバグが発生。休日返上で対応した。", impact: "HP -10", type: "negative", icon: "fa-solid fa-bug" },
+            { title: "戦略的ピボット", desc: "不調な事業をデジタル技術で再生。新規顧客層の開拓に成功した。", impact: "HP +25", type: "positive", icon: "fa-solid fa-arrows-spin" },
+            { title: "グローバル進出成功", desc: "デジタルプラットフォームを活用し、低コストで海外市場への展開を果たした。", impact: "HP +35", type: "positive", icon: "fa-solid fa-earth-americas" }
+        ];
+
+        const cardContainer = document.getElementById('cardContainer');
+        const cardContent = document.getElementById('cardContent');
+        const drawBtn = document.getElementById('drawBtn');
+        const cardCounter = document.getElementById('cardCounter');
+        const scanningText = document.getElementById('scanningText');
+        
+        const eventTitle = document.getElementById('eventTitle');
+        const eventDesc = document.getElementById('eventDesc');
+        const eventIcon = document.getElementById('eventIcon');
+        const eventImpact = document.getElementById('eventImpact');
+
+        let isDrawing = false;
+        let drawnCount = 0;
+
+        function resetDisplay() {
+            eventTitle.innerText = "LOADING...";
+            eventDesc.innerText = "データを解析中です...";
+            eventImpact.innerText = "---";
+            eventIcon.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
+            eventIcon.className = "text-5xl mb-4 text-blue-400";
+            cardContent.className = 'card-back type-neutral';
+        }
+
+        function drawCard() {
+            if (isDrawing) return;
+            isDrawing = true;
+
+            if (cardContainer.classList.contains('is-flipped')) {
+                // すでにカードが開いている場合は、一度閉じてから次のカードを引く
+                cardContainer.classList.remove('is-flipped');
+                scanningText.innerText = "PREPARING NEXT...";
+                setTimeout(() => {
+                    resetDisplay();
+                    processDraw();
+                }, 700); 
+            } else {
+                processDraw();
+            }
+        }
+
+        function closeCard() {
+            if (isDrawing) return;
+            cardContainer.classList.remove('is-flipped');
+            scanningText.innerText = "READY TO SCAN";
+            setTimeout(resetDisplay, 400);
+        }
+
+        function processDraw() {
+            const randomCard = cards[Math.floor(Math.random() * cards.length)];
+
+            eventTitle.innerText = randomCard.title;
+            eventDesc.innerText = randomCard.desc;
+            eventImpact.innerText = randomCard.impact;
+            eventIcon.innerHTML = `<i class="${randomCard.icon}"></i>`;
+
+            cardContent.className = 'card-back';
+            if (randomCard.type === 'positive') {
+                cardContent.classList.add('type-positive');
+                eventImpact.className = 'orbitron text-3xl font-bold text-green-400';
+                eventIcon.className = 'text-5xl mb-4 text-green-500';
+            } else if (randomCard.type === 'negative') {
+                cardContent.classList.add('type-negative');
+                eventImpact.className = 'orbitron text-3xl font-bold text-red-400';
+                eventIcon.className = 'text-5xl mb-4 text-red-500';
+            } else {
+                cardContent.classList.add('type-neutral');
+                eventImpact.className = 'orbitron text-3xl font-bold text-blue-400';
+                eventIcon.className = 'text-5xl mb-4 text-blue-500';
+            }
+
+            setTimeout(() => {
+                cardContainer.classList.add('is-flipped');
+                isDrawing = false;
+                drawnCount++;
+                cardCounter.innerText = `Logged: ${drawnCount} Events`;
+            }, 150);
+        }
+
+        drawBtn.addEventListener('click', drawCard);
+        
+        // カード自体のタップでも、開いていれば閉じ、閉じていれば引く
+        cardContainer.addEventListener('click', () => {
+            if (cardContainer.classList.contains('is-flipped')) {
+                closeCard();
+            } else {
+                drawCard();
+            }
+        });
+    </script>
+</body>
+</html>
